@@ -39,11 +39,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _RSLIDAR_LASERSCAN_H_
 #define _RSLIDAR_LASERSCAN_H_
 
-#include <ros/ros.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/LaserScan.h>
+// #include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
+// #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+// #include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/msg/laser_scan.hpp>
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <boost/thread/lock_guard.hpp>
 
 namespace rslidar_laserscan
@@ -55,7 +58,7 @@ public:
 
 private:
   void connectCb();
-  void recvCallback(const sensor_msgs::PointCloud2ConstPtr& msg);
+  void recvCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
 
   uint16_t ring_;
   uint16_t height_;
@@ -63,8 +66,10 @@ private:
   float range_max_;
   std::string sub_topic_;
   ros::NodeHandle nh_;
-  ros::Subscriber sub_;
-  ros::Publisher pub_;
+  // ros::Subscriber sub_;
+  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
+  // ros::Publisher pub_;
+  rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr pub_;
   boost::mutex connect_mutex_;
 };
 }
