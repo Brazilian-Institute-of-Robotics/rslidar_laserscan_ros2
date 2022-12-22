@@ -54,7 +54,7 @@ namespace rslidar_laserscan
 class RslidarLaserScan
 {
 public:
-  RslidarLaserScan(auto& nh, auto& nh_priv);
+  RslidarLaserScan(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<rclcpp::Node> nh_priv);
 
 private:
   void connectCb();
@@ -65,7 +65,8 @@ private:
   float range_min_;
   float range_max_;
   std::string sub_topic_;
-  ros::NodeHandle nh_;
+  // ros::NodeHandle nh_;
+  std::shared_ptr<rclcpp::Node> nh_;
   // ros::Subscriber sub_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
   // ros::Publisher pub_;

@@ -42,7 +42,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace rslidar_laserscan
 {
-RslidarLaserScan::RslidarLaserScan(auto& nh, auto& nh_priv) : nh_(nh)
+RslidarLaserScan::RslidarLaserScan(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<rclcpp::Node> nh_priv) : nh_(nh)
 {
   ros::SubscriberStatusCallback connect_cb = boost::bind(&RslidarLaserScan::connectCb, this);
   std::string model = "RS16";
