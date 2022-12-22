@@ -46,7 +46,7 @@ RslidarLaserScan::RslidarLaserScan(std::shared_ptr<rclcpp::Node> nh, std::shared
 {
   // ros::SubscriberStatusCallback connect_cb = boost::bind(&RslidarLaserScan::connectCb, this);
   auto connect_cb = std::bind(&RslidarLaserScan::connectCb, this);
-  rclcpp::SubscriptionEventCallbacks connect_cb = boost::bind(&RslidarLaserScan::connectCb, this);
+
   std::string model = "RS16";
 
   nh_priv.param("sub_topic", sub_topic_, std::string("/rslidar_points"));
