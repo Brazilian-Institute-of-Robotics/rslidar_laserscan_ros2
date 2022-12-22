@@ -163,7 +163,7 @@ RslidarLaserScan::RslidarLaserScan(std::shared_ptr<rclcpp::Node> nh, std::shared
     std::cout << "lidar model is bad. please choose right model from: RS16|RS32|RSHELIOS|RSHELIOS_16P|RSBP|RS80|RS128!" << std::endl;
     exit(-1);
   }
-  pub_ = nh.advertise<sensor_msgs::LaserScan>("rslidar_laserscan", 10, connect_cb, connect_cb);
+  pub_ = nh.advertise<sensor_msgs::msg::LaserScan>("rslidar_laserscan", 10, connect_cb, connect_cb);
 }
 
 void RslidarLaserScan::connectCb()
@@ -222,7 +222,7 @@ void RslidarLaserScan::recvCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
     const float RESOLUTION = 0.0034906584;  // 2.0 * M_PI / 1800 (10Hz)
     const size_t SIZE = 2.0 * M_PI / RESOLUTION;
 
-    sensor_msgs::LaserScanPtr scan(new sensor_msgs::LaserScan());
+    sensor_msgs::msg::LaserScanPtr scan(new sensor_msgs::msg::LaserScan());
     scan->header = msg->header;
     scan->angle_increment = RESOLUTION;
 
