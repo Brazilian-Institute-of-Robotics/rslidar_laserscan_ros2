@@ -54,7 +54,7 @@ namespace rslidar_laserscan
 class RslidarLaserScan
 {
 public:
-  RslidarLaserScan(ros::NodeHandle& nh, ros::NodeHandle& nh_priv);
+  RslidarLaserScan(auto& nh, auto& nh_priv);
 
 private:
   void connectCb();
