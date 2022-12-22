@@ -38,11 +38,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "rslidar_laserscan/rslidar_laserscan.h"
 
-#include <sensor_msgs/point_cloud2_iterator.h>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 
 namespace rslidar_laserscan
 {
-RslidarLaserScan::RslidarLaserScan(ros::NodeHandle& nh, ros::NodeHandle& nh_priv) : nh_(nh)
+RslidarLaserScan::RslidarLaserScan(auto& nh, auto& nh_priv) : nh_(nh)
 {
   ros::SubscriberStatusCallback connect_cb = boost::bind(&RslidarLaserScan::connectCb, this);
   std::string model = "RS16";
