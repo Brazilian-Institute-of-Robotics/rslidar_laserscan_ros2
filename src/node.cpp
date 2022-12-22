@@ -36,20 +36,24 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ********************************************************************************************/
 
-#include <ros/ros.h>
+// #include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 
 #include "rslidar_laserscan/rslidar_laserscan.h"
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "rslidar_laserscan_node");
+  // ros::init(argc, argv, "rslidar_laserscan_node");
+  // ros::NodeHandle nh;
 
-  ros::NodeHandle nh;
-  ros::NodeHandle nh_priv("~");
+  rclcpp::init(argc, argv);
+  auto nh = rclcpp::Node::make_shared("rslidar_laserscan_node");
+  // ros::NodeHandle nh_priv("~");
+  auto nh_priv = rclcpp::Node::make_shared("~");
   rslidar_laserscan::RslidarLaserScan n(nh, nh_priv);
 
   // handle callbacks until shut down
-  ros::spin();
+  ros::spin(nh);
 
   return 0;
 }
