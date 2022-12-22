@@ -70,7 +70,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
   // ros::Publisher pub_;
   rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr pub_;
-  boost::mutex connect_mutex_;
+  std::mutex connect_mutex_;
 };
 }
 

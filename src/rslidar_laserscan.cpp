@@ -168,7 +168,7 @@ RslidarLaserScan::RslidarLaserScan(auto& nh, auto& nh_priv) : nh_(nh)
 
 void RslidarLaserScan::connectCb()
 {
-  boost::lock_guard<boost::mutex> lock(connect_mutex_);
+  boost::lock_guard<std::mutex> lock(connect_mutex_);
   if (!pub_.getNumSubscribers())
   {
     sub_.shutdown();
