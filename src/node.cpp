@@ -53,7 +53,8 @@ int main(int argc, char** argv)
   rslidar_laserscan::RslidarLaserScan n(nh, nh_priv);
 
   // handle callbacks until shut down
-  ros::spin(nh);
+  // ros::spin(nh);
+  rclcpp::spin(nh);
 
   return 0;
 }

@@ -35,25 +35,44 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF TH
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ********************************************************************************************/
+#include <rcl_interfaces/msg/parameter_descriptor.hpp>
+#include <rcl_interfaces/msg/floating_point_range.hpp>
+#include <rcl_interfaces/msg/integer_range.hpp>
 
 #include "rslidar_laserscan/rslidar_laserscan.h"
-
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+
+#include "std_msgs/msg/string.hpp"
+#include <functional>
+#include <memory>
+using std::placeholders::_1;
 
 namespace rslidar_laserscan
 {
 RslidarLaserScan::RslidarLaserScan(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<rclcpp::Node> nh_priv) : nh_(nh)
 {
-  // ros::SubscriberStatusCallback connect_cb = boost::bind(&RslidarLaserScan::connectCb, this);
-  auto connect_cb = std::bind(&RslidarLaserScan::connectCb, this);
+  // ros::SubscriberStatusCallback connect_cb = boost::bind(&RslidarLaserScan::connectCb, this); 
+
+  // nh_priv.param("sub_topic", sub_topic_, std::string("/rslidar_points"));
+  rcl_interfaces::msg::ParameterDescriptor rslidar_points;
+  rslidar_points.name = "/rslidar_points";
+  rslidar_points.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+  auto rs_lidar_points_ = nh_->declare_parameter("sub_topic", sub_topic_, rslidar_points);
 
   std::string model = "RS16";
-
-  nh_priv.param("sub_topic", sub_topic_, std::string("/rslidar_points"));
-  nh_priv.param("model", model, std::string("RS16"));
+  rcl_interfaces::msg::ParameterDescriptor RS16;
+  RS16.name = "RS16";
+  RS16.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+  // nh_priv.param("model", model, std::string("RS16"));
+  auto model_ = nh_->declare_parameter("model", model, RS16);
 
   int ring = 1000;
-  nh_priv.param("ring", ring, 1000);  // 1000 is not set ring
+  rcl_interfaces::msg::ParameterDescriptor ring_1000;
+  ring_1000.name = "ring";
+  ring_1000.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
+  // nh_priv.param("ring", ring, 1000);  // 1000 is not set ring
+  nh_->declare_parameter("ring", ring, ring_1000);
 
   if (model == "RS16")
   {
@@ -165,26 +184,32 @@ RslidarLaserScan::RslidarLaserScan(std::shared_ptr<rclcpp::Node> nh, std::shared
     std::cout << "lidar model is bad. please choose right model from: RS16|RS32|RSHELIOS|RSHELIOS_16P|RSBP|RS80|RS128!" << std::endl;
     exit(-1);
   }
-  pub_ = nh.advertise<sensor_msgs::msg::LaserScan>("rslidar_laserscan", 10, connect_cb, connect_cb);
+  pub_ = nh_->create_publisher<sensor_msgs::msg::LaserScan>("rslidar_laserscan", 10
+  // , std::bind(&RslidarLaserScan::connectCb, this)
+  );
 }
 
 void RslidarLaserScan::connectCb()
 {
   boost::lock_guard<std::mutex> lock(connect_mutex_);
-  if (!pub_.getNumSubscribers())
+  if (!pub_->get_subscription_count())
   {
-    sub_.shutdown();
+    // sub_.shutdown();
+    rclcpp::shutdown();
   }
   else if (!sub_)
   {
-    sub_ = nh_.subscribe(sub_topic_, 10, &RslidarLaserScan::recvCallback, this);
+    sub_ = nh_->create_subscription<sensor_msgs::msg::PointCloud2>(
+                  "rslidar_points", rclcpp::QoS(10), //&RslidarLaserScan::recvCallback, this
+                  std::bind(&RslidarLaserScan::recvCallback, nh_, std::placeholders::_1)
+    );
   }
 }
 
-void RslidarLaserScan::recvCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
+void RslidarLaserScan::recvCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
-  ROS_INFO_ONCE("RobosenseLaserScan. point cloud width %u, height %u, extracting ring %u", msg->width, msg->height,
-                ring_);
+  // RCLCPP_INFO_ONCE("RobosenseLaserScan. point cloud width %u, height %u, extracting ring %u", msg->width, msg->height,
+  //               ring_);
 
   // field offsets
   int offset_x = -1;
@@ -194,7 +219,7 @@ void RslidarLaserScan::recvCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
 
   for (size_t i = 0; i < msg->fields.size(); i++)
   {
-    if (msg->fields[i].datatype == sensor_msgs::PointField::FLOAT32)
+    if (msg->fields[i].datatype == sensor_msgs::msg::PointField::FLOAT32)
     {
       if (msg->fields[i].name == "x")
       {
@@ -224,7 +249,8 @@ void RslidarLaserScan::recvCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
     const float RESOLUTION = 0.0034906584;  // 2.0 * M_PI / 1800 (10Hz)
     const size_t SIZE = 2.0 * M_PI / RESOLUTION;
 
-    sensor_msgs::msg::LaserScanPtr scan(new sensor_msgs::msg::LaserScan());
+    // std::shared_ptr<sensor_msgs::msg::LaserScan> scan(new sensor_msgs::msg::LaserScan());
+    auto scan = std::make_unique<sensor_msgs::msg::LaserScan>();
     scan->header = msg->header;
     scan->angle_increment = RESOLUTION;
 
@@ -259,7 +285,7 @@ void RslidarLaserScan::recvCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
         }
       }
     }
-    pub_.publish(scan);
+    pub_->publish(std::move(scan));
   }
 }
 }
