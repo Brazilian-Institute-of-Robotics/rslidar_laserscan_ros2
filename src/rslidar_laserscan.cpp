@@ -201,8 +201,7 @@ void RslidarLaserScan::connectCb()
   {
     sub_ = nh_->create_subscription<sensor_msgs::msg::PointCloud2>(
                   "rslidar_points", rclcpp::QoS(10), //&RslidarLaserScan::recvCallback, this
-                  std::bind(&RslidarLaserScan::recvCallback, nh_, std::placeholders::_1)
-    );
+                  std::bind(&RslidarLaserScan::recvCallback, nh_, std::placeholders::_1));
   }
 }
 
